@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TaskType {
+  LIST
+  ITEM
+}
+
+enum TaskStatus {
+  TODO
+  ONGOING
+  ONHOLD
+  COMPLETED
+  DROPPED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model User {
+  username    String    @id
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  password    String
+  displayName String?
+  Project     Project[]
+}
+
+model Project {
+  id        String    @id @default(uuid())
+  title     String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [ownedBy], references: [username])
+  ownedBy   String
+  deletedAt DateTime?
+  Task      Task[]
+}
+
+model Task {
+  id        String        @id @default(uuid())
+  title     String
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  deletedAt DateTime?
+  status    TaskStatus?
+  type      TaskType      @default(ITEM)
+  priority  TaskPriority? @default(LOW)
+
+  // Relation to Project
+  belongsTo Project @relation(fields: [projectId], references: [id])
+  projectId String
+
+  // A Task can have a parent and many children
+  parent   Task?   @relation("TaskToSubtasks", fields: [parentId], references: [id])
+  parentId String?
+  children Task[]  @relation("TaskToSubtasks")
+}

@@ -1,0 +1,14 @@
+# Node modules
+node_modules
+
+# Environment variables
+.env
+
+# Compiled output
+dist/
+
+# Prisma generated client
+/generated/
+
+# Temp reference
+_script.txt
