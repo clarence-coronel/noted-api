@@ -1,15 +1,16 @@
-import express, { Request, Response } from "express";
+import express from "express";
+import cors from "cors";
+import { PORT } from "./config/env";
+import router from "./routes";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 // Middleware to parse JSON bodies
 app.use(express.json());
+app.use(cors());
 
-// Basic route example
-app.get("/", (req: Request, res: Response) => {
-  res.send("Hello from Express + TypeScript!");
-});
+// Routes
+app.use(router);
 
 // Start server
 app.listen(PORT, () => {
