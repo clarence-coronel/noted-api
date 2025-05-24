@@ -42,17 +42,43 @@ export const createUser = async (req: Request, res: Response) => {
       password: hashedPassword,
       displayName,
     },
+    select: {
+      username: true,
+      displayName: true,
+    },
   });
 
-  const { password: _, ...safeUser } = newUser;
-
-  sendSuccess(res, safeUser, "User created successfully", 201);
+  sendSuccess(res, newUser, "User created successfully", 201);
 };
 
-export const updateUser = (req: Request, res: Response) => {
+export const updateUser = async (req: Request, res: Response) => {
+  const { displayName } = req.body;
+
   const id = req.params.id;
 
-  res.send("ID: " + id);
+  const existingUser = await user.findUnique({
+    where: { id },
+  });
+
+  if (!existingUser) {
+    sendError(res, "User not found", ErrorCodesEnum.NOT_FOUND, null, 404);
+    return;
+  }
+
+  const updatedUser = await user.update({
+    where: {
+      id,
+    },
+    data: {
+      displayName,
+    },
+    select: {
+      username: true,
+      displayName: true,
+    },
+  });
+
+  sendSuccess(res, updatedUser, "User created successfully", 201);
 };
 
 export const deleteUser = (req: Request, res: Response) => {

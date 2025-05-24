@@ -17,7 +17,7 @@ export const sendSuccess = <T>(
 export const sendError = (
   res: Response,
   message = "Something went wrong",
-  code?: ErrorCodesEnum,
+  code?: ErrorCodesEnum | null,
   details?: unknown,
   statusCode = 500
 ): Response => {
