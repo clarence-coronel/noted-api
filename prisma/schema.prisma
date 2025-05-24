@@ -35,12 +35,14 @@ enum TaskPriority {
 }
 
 model User {
-  username    String    @id
+  id          String    @id @default(uuid())
+  username    String    @unique
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   password    String
   displayName String?
   Project     Project[]
+  isActive    Boolean   @default(true)
 }
 
 model Project {
@@ -48,7 +50,7 @@ model Project {
   title     String
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  user      User      @relation(fields: [ownedBy], references: [username])
+  user      User      @relation(fields: [ownedBy], references: [id])
   ownedBy   String
   deletedAt DateTime?
   Task      Task[]
