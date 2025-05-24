@@ -3,6 +3,7 @@ import prisma from "../utils/prisma";
 import { sendError, sendSuccess } from "../utils/response";
 import { ErrorCodesEnum } from "../enums/errorCodesEnum";
 import { hashPassword } from "../utils/bcrypt";
+import { verifyUserExists } from "../helper/userHelper";
 
 const { user } = prisma;
 
@@ -52,20 +53,11 @@ export const createUser = async (req: Request, res: Response) => {
 };
 
 export const updateUser = async (req: Request, res: Response) => {
+  const { id } = req.params;
   const { displayName } = req.body;
 
-  const id = req.params.id;
-
-  const existingUser = await user.findUnique({
-    where: { id },
-  });
-
-  throw new Error("TEST");
-
-  if (!existingUser) {
-    sendError(res, "User not found", ErrorCodesEnum.NOT_FOUND, null, 404);
-    return;
-  }
+  const existingUser = await verifyUserExists(id, res);
+  if (!existingUser) return;
 
   const updatedUser = await user.update({
     where: {
@@ -80,11 +72,23 @@ export const updateUser = async (req: Request, res: Response) => {
     },
   });
 
-  sendSuccess(res, updatedUser, "User created successfully", 201);
+  sendSuccess(res, updatedUser, "User updated successfully", 201);
 };
 
-export const deleteUser = (req: Request, res: Response) => {
-  const id = req.params.id;
+export const deleteUser = async (req: Request, res: Response) => {
+  const { id } = req.params;
 
-  res.send("ID: " + id);
+  const existingUser = await verifyUserExists(id, res);
+  if (!existingUser) return;
+
+  await user.update({
+    where: {
+      id,
+    },
+    data: {
+      isActive: false,
+    },
+  });
+
+  sendSuccess(res, null, "User removed successfully", 200);
 };
