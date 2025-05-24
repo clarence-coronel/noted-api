@@ -10,13 +10,12 @@ import { validateBody } from "../middleware/validateBody";
 import { createUserSchema, updateUserSchema } from "../schemas/userSchema";
 import { validateParams } from "../middleware/validateParams";
 import { idSchema } from "../schemas/idSchema";
-import { catchAsync } from "../middleware/catchAsync";
 
 const router = Router();
 
 router.get("/", getAllUsers);
 router.get("/:id", getUserById);
-router.post("/", validateBody(createUserSchema), catchAsync(createUser));
+router.post("/", validateBody(createUserSchema), createUser);
 router.put(
   "/:id",
   validateParams(idSchema),

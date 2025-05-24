@@ -60,6 +60,8 @@ export const updateUser = async (req: Request, res: Response) => {
     where: { id },
   });
 
+  throw new Error("TEST");
+
   if (!existingUser) {
     sendError(res, "User not found", ErrorCodesEnum.NOT_FOUND, null, 404);
     return;
