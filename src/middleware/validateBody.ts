@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { ZodSchema } from "zod";
-import { sendError } from "../utils/response";
-import { ErrorCodesEnum } from "../enums/errorCodesEnum";
+import { ErrorCodesEnum } from "../enums";
+import { sendError } from "../utils";
 
 export const validateBody =
   (schema: ZodSchema<any>) =>

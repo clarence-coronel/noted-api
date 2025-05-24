@@ -1,5 +1,5 @@
 import { Response } from "express";
-import { ErrorCodesEnum } from "../enums/errorCodesEnum";
+import { ErrorCodesEnum } from "../enums";
 
 export const sendSuccess = <T>(
   res: Response,

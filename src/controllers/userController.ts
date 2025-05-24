@@ -1,9 +1,6 @@
 import { Request, Response } from "express";
-import prisma from "../utils/prisma";
-import { sendError, sendSuccess } from "../utils/response";
-import { ErrorCodesEnum } from "../enums/errorCodesEnum";
-import { hashPassword } from "../utils/bcrypt";
-import { verifyUserExists } from "../helper/userHelper";
+import { verifyUserExists } from "../helper";
+import { prisma, sendSuccess } from "../utils";
 
 const { user } = prisma;
 

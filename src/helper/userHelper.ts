@@ -1,6 +1,5 @@
-import prisma from "../utils/prisma";
-import { ErrorCodesEnum } from "../enums/errorCodesEnum";
-import { sendError } from "../utils/response";
+import { ErrorCodesEnum } from "../enums";
+import { prisma, sendError } from "../utils";
 import { Response } from "express";
 
 const { user } = prisma;

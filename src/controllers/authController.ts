@@ -1,8 +1,7 @@
 import { Request, Response } from "express";
 import { ErrorCodesEnum } from "../enums/errorCodesEnum";
 import { sendError, sendSuccess } from "../utils/response";
-import prisma from "../utils/prisma";
-import { hashPassword } from "../utils/bcrypt";
+import { hashPassword, prisma } from "../utils";
 
 const { user } = prisma;
 

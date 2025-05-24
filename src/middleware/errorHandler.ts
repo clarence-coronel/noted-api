@@ -1,11 +1,11 @@
-import { Request, Response, NextFunction, ErrorRequestHandler } from "express";
-import { sendError } from "../utils/response";
+import { ErrorRequestHandler } from "express";
+import { sendError } from "../utils";
 
 export const errorHandler: ErrorRequestHandler = (
   err,
-  req,
+  _req,
   res,
-  next
+  _next
 ): void => {
   if (err.statusCode || err.code) {
     sendError(
