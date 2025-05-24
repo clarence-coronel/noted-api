@@ -17,41 +17,6 @@ export const getUserById = (req: Request, res: Response) => {
   res.send("ID: " + id);
 };
 
-export const createUser = async (req: Request, res: Response) => {
-  const { username, password, displayName } = req.body;
-
-  const existingUser = await user.findUnique({
-    where: { username },
-  });
-
-  if (existingUser) {
-    sendError(
-      res,
-      "Username already taken",
-      ErrorCodesEnum.CONFLICT,
-      null,
-      409
-    );
-    return;
-  }
-
-  const hashedPassword = await hashPassword(password);
-
-  const newUser = await user.create({
-    data: {
-      username,
-      password: hashedPassword,
-      displayName,
-    },
-    select: {
-      username: true,
-      displayName: true,
-    },
-  });
-
-  sendSuccess(res, newUser, "User created successfully", 201);
-};
-
 export const updateUser = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { displayName } = req.body;
