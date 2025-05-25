@@ -1,17 +1,29 @@
-import { ErrorCodesEnum } from "../enums";
-import { prisma, sendError } from "../utils";
-import { Response } from "express";
+import { prisma } from "../utils";
 
 const { user } = prisma;
 
-export const verifyUserExists = async (id: string, res: Response) => {
-  // Find user and only return if active
-  const existingUser = await user.findUnique({ where: { id, isActive: true } });
+export const verifyUserExists = async ({
+  identifier,
+  id,
+  username,
+}: {
+  identifier: "ID" | "USERNAME";
+  id?: string;
+  username?: string;
+}) => {
+  let existingUser = null;
 
-  if (!existingUser) {
-    sendError(res, "User not found", ErrorCodesEnum.NOT_FOUND, null, 404);
-    return null;
+  if (identifier === "ID") {
+    if (!id) throw new Error("ID is required when identifier is 'ID'");
+    existingUser = await user.findUnique({ where: { id } });
+  } else if (identifier === "USERNAME") {
+    if (!username)
+      throw new Error("Username is required when identifier is 'USERNAME'");
+    existingUser = await user.findUnique({ where: { username } });
   }
+
+  // Return null if not found or inactive
+  if (!existingUser || !existingUser.isActive) return null;
 
   return existingUser;
 };

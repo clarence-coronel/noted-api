@@ -1,17 +1,13 @@
 import { Router } from "express";
-import {
-  deleteUser,
-  getAllUsers,
-  getUserById,
-  updateUser,
-} from "../controllers";
+import { deleteUser, updateUser } from "../controllers";
 import { idSchema, updateUserSchema } from "../schemas";
 import { validateBody, validateParams } from "../middleware";
+import { auth } from "../middleware/auth";
 
 const router = Router();
 
-router.get("/", getAllUsers);
-router.get("/:id", getUserById);
+router.use(auth);
+
 router.put(
   "/:id",
   validateParams(idSchema),
