@@ -15,6 +15,8 @@ import {
   ENVIRONMENT,
   REFRESH_TOKEN_EXPIRES,
 } from "../config";
+import { loginSchema } from "../schemas";
+import { z } from "zod";
 
 const { user } = prisma;
 
@@ -82,7 +84,7 @@ export const register = async (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
-  const { username, password } = req.body;
+  const { username, password } = req.body as z.infer<typeof loginSchema>;
 
   // Validate input
   if (!username || !password) {
@@ -251,7 +253,7 @@ export const refreshToken = async (req: Request, res: Response) => {
 };
 
 export const getMe = async (req: Request, res: Response) => {
-  const userId = (req as any).user?.userId;
+  const userId = req.user?.userId;
 
   if (!userId) {
     sendError(res, "Unauthorized", ErrorCodesEnum.UNAUTHORIZED, null, 401);
