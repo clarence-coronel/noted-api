@@ -9,11 +9,26 @@ import {
 
 export const auth = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers["authorization"];
-  const accessToken = authHeader && authHeader.split(" ")[1];
+  let accessToken: string | null = null;
 
-  const unauthorized = (message: string) => {
-    sendError(res, message, ErrorCodesEnum.UNAUTHORIZED, null, 401);
-  };
+  // Check authorization header format
+  if (authHeader) {
+    const parts = authHeader.split(" ");
+
+    // Check if it's a proper Bearer token format
+    if (parts.length === 2 && parts[0].toLowerCase() === "bearer" && parts[1]) {
+      accessToken = parts[1];
+    } else {
+      sendError(
+        res,
+        "Invalid authorization header format. Expected 'Bearer <token>'.",
+        ErrorCodesEnum.UNAUTHORIZED,
+        null,
+        401
+      );
+      return;
+    }
+  }
 
   // First try validating access token
   const decodedAccess = accessToken && verifyAccessToken(accessToken);
@@ -29,7 +44,8 @@ export const auth = (req: Request, res: Response, next: NextFunction) => {
   const decodedRefresh = refreshToken && verifyRefreshToken(refreshToken);
 
   if (decodedRefresh && typeof decodedRefresh !== "string") {
-    const newAccessToken = signAccessToken({ ...decodedRefresh });
+    const { exp, iat, ...cleanPayload } = decodedRefresh;
+    const newAccessToken = signAccessToken(cleanPayload);
 
     // Send new access token via header (you can also set it in cookie if preferred)
     res.setHeader("x-access-token", newAccessToken);
@@ -38,5 +54,11 @@ export const auth = (req: Request, res: Response, next: NextFunction) => {
     return next();
   }
 
-  return unauthorized("Session expired or invalid. Please log in again.");
+  sendError(
+    res,
+    "Session expired or invalid. Please log in again.",
+    ErrorCodesEnum.UNAUTHORIZED,
+    null,
+    401
+  );
 };
