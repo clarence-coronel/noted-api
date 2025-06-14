@@ -2,12 +2,14 @@ import { Request, Response } from "express";
 import { verifyUserExists } from "../helper";
 import { prisma, sendError, sendSuccess } from "../utils";
 import { ErrorCodesEnum } from "../enums";
+import { z } from "zod";
+import { idSchema, updateUserSchema } from "../schemas";
 
 const { user } = prisma;
 
 export const updateUser = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { displayName } = req.body;
+  const { id } = req.params as z.infer<typeof idSchema>;
+  const { displayName } = req.body as z.infer<typeof updateUserSchema>;
 
   const existingUser = await verifyUserExists({ identifier: "ID", id });
   if (!existingUser) {
@@ -32,7 +34,7 @@ export const updateUser = async (req: Request, res: Response) => {
 };
 
 export const deleteUser = async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const { id } = req.params as z.infer<typeof idSchema>;
 
   const existingUser = await verifyUserExists({ identifier: "ID", id });
   if (!existingUser) {
