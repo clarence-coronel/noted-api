@@ -1,27 +1,42 @@
 import { Response } from "express";
 import { ErrorCodesEnum } from "../enums";
 
-export const sendSuccess = <T>(
-  res: Response,
-  data: T,
+interface SendSuccessOptions<T> {
+  response: Response;
+  data?: T | null;
+  message?: string;
+  statusCode?: number;
+}
+
+interface SendErrorOptions {
+  response: Response;
+  message?: string;
+  code?: ErrorCodesEnum | null;
+  details?: unknown;
+  statusCode?: number;
+}
+
+export const sendSuccess = <T>({
+  response,
+  data = null,
   message = "Success",
-  statusCode = 200
-): Response => {
-  return res.status(statusCode).json({
+  statusCode = 200,
+}: SendSuccessOptions<T>): Response => {
+  return response.status(statusCode).json({
     success: true,
     message,
     data,
   });
 };
 
-export const sendError = (
-  res: Response,
+export const sendError = ({
+  response,
   message = "Something went wrong",
-  code?: ErrorCodesEnum | null,
-  details?: unknown,
-  statusCode = 500
-): Response => {
-  return res.status(statusCode).json({
+  code = null,
+  details = null,
+  statusCode = 500,
+}: SendErrorOptions): Response => {
+  return response.status(statusCode).json({
     success: false,
     message,
     error: {

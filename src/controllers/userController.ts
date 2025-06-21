@@ -7,13 +7,18 @@ import { idSchema, updateUserSchema } from "../schemas";
 
 const { user } = prisma;
 
-export const updateUser = async (req: Request, res: Response) => {
-  const { id } = req.params as z.infer<typeof idSchema>;
-  const { displayName } = req.body as z.infer<typeof updateUserSchema>;
+export const updateUser = async (request: Request, response: Response) => {
+  const { id } = request.params as z.infer<typeof idSchema>;
+  const { displayName } = request.body as z.infer<typeof updateUserSchema>;
 
   const existingUser = await verifyUserExists({ identifier: "ID", id });
   if (!existingUser) {
-    sendError(res, "User not found", ErrorCodesEnum.NOT_FOUND, null, 404);
+    sendError({
+      response,
+      message: "User not found",
+      code: ErrorCodesEnum.NOT_FOUND,
+      statusCode: 404,
+    });
     return;
   }
 
@@ -30,15 +35,25 @@ export const updateUser = async (req: Request, res: Response) => {
     },
   });
 
-  sendSuccess(res, updatedUser, "User updated successfully", 201);
+  sendSuccess({
+    response,
+    data: updatedUser,
+    message: "User updated successfully",
+    statusCode: 201,
+  });
 };
 
-export const deleteUser = async (req: Request, res: Response) => {
-  const { id } = req.params as z.infer<typeof idSchema>;
+export const deleteUser = async (request: Request, response: Response) => {
+  const { id } = request.params as z.infer<typeof idSchema>;
 
   const existingUser = await verifyUserExists({ identifier: "ID", id });
   if (!existingUser) {
-    sendError(res, "User not found", ErrorCodesEnum.NOT_FOUND, null, 404);
+    sendError({
+      response,
+      message: "User not found",
+      code: ErrorCodesEnum.NOT_FOUND,
+      statusCode: 404,
+    });
     return;
   }
 
@@ -51,5 +66,9 @@ export const deleteUser = async (req: Request, res: Response) => {
     },
   });
 
-  sendSuccess(res, null, "User removed successfully", 200);
+  sendSuccess({
+    response,
+    message: "User removed successfully",
+    statusCode: 200,
+  });
 };

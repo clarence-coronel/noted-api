@@ -8,17 +8,17 @@ export const errorHandler: ErrorRequestHandler = (
   _next
 ): void => {
   if (err.statusCode || err.code) {
-    sendError(
-      res,
-      err.message || "An error occurred",
-      err.code || null,
-      err.details || null,
-      err.statusCode || 400
-    );
+    sendError({
+      response: res,
+      message: err.message || "An error occurred",
+      code: err.code || null,
+      details: err.details || null,
+      statusCode: err.statusCode || 400,
+    });
     return;
   }
 
   console.error(err);
 
-  sendError(res);
+  sendError({ response: res });
 };

@@ -20,19 +20,18 @@ import { z } from "zod";
 
 const { user } = prisma;
 
-export const register = async (req: Request, res: Response) => {
-  const { username, password, displayName } = req.body;
+export const register = async (request: Request, response: Response) => {
+  const { username, password, displayName } = request.body;
 
   const existingUser = await user.findUnique({ where: { username } });
 
   if (existingUser) {
-    sendError(
-      res,
-      "Username already taken",
-      ErrorCodesEnum.CONFLICT,
-      null,
-      409
-    );
+    sendError({
+      response,
+      message: "Username already taken",
+      code: ErrorCodesEnum.CONFLICT,
+      statusCode: 409,
+    });
     return;
   }
 
@@ -61,16 +60,16 @@ export const register = async (req: Request, res: Response) => {
   const refreshToken = signRefreshToken(payload);
 
   // Set refresh token as httpOnly cookie
-  res.cookie("refreshToken", refreshToken, {
+  response.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     secure: ENVIRONMENT === "production",
     sameSite: "strict",
     maxAge: convertJwtTimeToMs(REFRESH_TOKEN_EXPIRES),
   });
 
-  sendSuccess(
-    res,
-    {
+  sendSuccess({
+    response,
+    data: {
       user: {
         id: newUser.id,
         username: newUser.username,
@@ -78,23 +77,22 @@ export const register = async (req: Request, res: Response) => {
       },
       accessToken,
     },
-    "User created successfully",
-    201
-  );
+    message: "User created successfully",
+    statusCode: 201,
+  });
 };
 
-export const login = async (req: Request, res: Response) => {
-  const { username, password } = req.body as z.infer<typeof loginSchema>;
+export const login = async (request: Request, response: Response) => {
+  const { username, password } = request.body as z.infer<typeof loginSchema>;
 
   // Validate input
   if (!username || !password) {
-    sendError(
-      res,
-      "Username and password are required",
-      ErrorCodesEnum.BAD_REQUEST,
-      null,
-      400
-    );
+    sendError({
+      response,
+      message: "Username and password are required",
+      code: ErrorCodesEnum.BAD_REQUEST,
+      statusCode: 400,
+    });
     return;
   }
 
@@ -104,26 +102,24 @@ export const login = async (req: Request, res: Response) => {
   });
 
   if (!existingUser) {
-    sendError(
-      res,
-      "Invalid credentials",
-      ErrorCodesEnum.UNAUTHORIZED,
-      null,
-      401
-    );
+    sendError({
+      response,
+      message: "Invalid credentials",
+      code: ErrorCodesEnum.UNAUTHORIZED,
+      statusCode: 401,
+    });
     return;
   }
 
   const verified = await verifyPassword(password, existingUser.password);
 
   if (!verified) {
-    sendError(
-      res,
-      "Invalid credentials",
-      ErrorCodesEnum.UNAUTHORIZED,
-      null,
-      401
-    );
+    sendError({
+      response,
+      message: "Invalid credentials",
+      code: ErrorCodesEnum.UNAUTHORIZED,
+      statusCode: 401,
+    });
     return;
   }
 
@@ -137,16 +133,16 @@ export const login = async (req: Request, res: Response) => {
   const refreshToken = signRefreshToken(payload);
 
   // Set refresh token as httpOnly cookie
-  res.cookie("refreshToken", refreshToken, {
+  response.cookie("refreshToken", refreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
     maxAge: convertJwtTimeToMs(REFRESH_TOKEN_EXPIRES),
   });
 
-  sendSuccess(
-    res,
-    {
+  sendSuccess({
+    response,
+    data: {
       user: {
         id: existingUser.id,
         username: existingUser.username,
@@ -154,33 +150,36 @@ export const login = async (req: Request, res: Response) => {
       },
       accessToken,
     },
-    "Login successful",
-    200
-  );
+    message: "Login successful",
+    statusCode: 200,
+  });
 };
 
-export const logout = async (req: Request, res: Response) => {
+export const logout = async (request: Request, response: Response) => {
   // Clear the refresh token cookie
-  res.clearCookie("refreshToken", {
+  response.clearCookie("refreshToken", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
   });
 
-  sendSuccess(res, null, "Logged out successfully", 200);
+  sendSuccess({
+    response,
+    message: "Logged out successfully",
+    statusCode: 200,
+  });
 };
 
-export const refreshToken = async (req: Request, res: Response) => {
-  const { refreshToken } = req.cookies;
+export const refreshToken = async (request: Request, response: Response) => {
+  const { refreshToken } = request.cookies;
 
   if (!refreshToken) {
-    sendError(
-      res,
-      "Refresh token not provided",
-      ErrorCodesEnum.UNAUTHORIZED,
-      null,
-      401
-    );
+    sendError({
+      response,
+      message: "Refresh token not provided",
+      code: ErrorCodesEnum.UNAUTHORIZED,
+      statusCode: 401,
+    });
     return;
   }
 
@@ -188,13 +187,13 @@ export const refreshToken = async (req: Request, res: Response) => {
   const decoded = verifyRefreshToken(refreshToken);
 
   if (!decoded || typeof decoded === "string") {
-    sendError(
-      res,
-      "Invalid refresh token",
-      ErrorCodesEnum.UNAUTHORIZED,
-      null,
-      401
-    );
+    sendError({
+      response,
+      message: "Invalid refresh token",
+      code: ErrorCodesEnum.UNAUTHORIZED,
+
+      statusCode: 401,
+    });
     return;
   }
 
@@ -215,7 +214,12 @@ export const refreshToken = async (req: Request, res: Response) => {
   });
 
   if (!existingUser) {
-    sendError(res, "User not found", ErrorCodesEnum.NOT_FOUND, null, 404);
+    sendError({
+      response,
+      message: "User not found",
+      code: ErrorCodesEnum.NOT_FOUND,
+      statusCode: 404,
+    });
     return;
   }
 
@@ -229,7 +233,7 @@ export const refreshToken = async (req: Request, res: Response) => {
   const newRefreshToken = signRefreshToken(payload);
 
   // Set new refresh token as httpOnly cookie
-  res.cookie("refreshToken", newRefreshToken, {
+  response.cookie("refreshToken", newRefreshToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
@@ -237,9 +241,9 @@ export const refreshToken = async (req: Request, res: Response) => {
   });
 
   // Return new access token
-  sendSuccess(
-    res,
-    {
+  sendSuccess({
+    response,
+    data: {
       accessToken: newAccessToken,
       user: {
         id: existingUser.id,
@@ -247,18 +251,13 @@ export const refreshToken = async (req: Request, res: Response) => {
         displayName: existingUser.displayName,
       },
     },
-    "Token refreshed successfully",
-    200
-  );
+    message: "Token refreshed successfully",
+    statusCode: 200,
+  });
 };
 
-export const getMe = async (req: Request, res: Response) => {
-  const userId = req.user?.userId;
-
-  if (!userId) {
-    sendError(res, "Unauthorized", ErrorCodesEnum.UNAUTHORIZED, null, 401);
-    return;
-  }
+export const getMe = async (request: Request, response: Response) => {
+  const userId = request.user.userId;
 
   const currentUser = await user.findUnique({
     where: { id: userId },
@@ -272,19 +271,34 @@ export const getMe = async (req: Request, res: Response) => {
   });
 
   if (!currentUser) {
-    sendError(res, "User not found", ErrorCodesEnum.NOT_FOUND, null, 404);
+    sendError({
+      response,
+      message: "User not found",
+      code: ErrorCodesEnum.NOT_FOUND,
+      statusCode: 404,
+    });
     return;
   }
 
-  sendSuccess(res, currentUser, "User retrieved successfully", 200);
+  sendSuccess({
+    response,
+    data: currentUser,
+    message: "User retrieved successfully",
+    statusCode: 200,
+  });
 };
 
-export const changePassword = async (req: Request, res: Response) => {
-  const { currentPassword, newPassword } = req.body;
-  const userId = (req as any).user?.userId;
+export const changePassword = async (request: Request, response: Response) => {
+  const { currentPassword, newPassword } = request.body;
+  const userId = (request as any).user?.userId;
 
   if (!userId) {
-    sendError(res, "Unauthorized", ErrorCodesEnum.UNAUTHORIZED, null, 401);
+    sendError({
+      response,
+      message: "Unauthorized",
+      code: ErrorCodesEnum.UNAUTHORIZED,
+      statusCode: 401,
+    });
     return;
   }
 
@@ -295,7 +309,12 @@ export const changePassword = async (req: Request, res: Response) => {
   });
 
   if (!existingUser) {
-    sendError(res, "User not found", ErrorCodesEnum.NOT_FOUND, null, 404);
+    sendError({
+      response,
+      message: "User not found",
+      code: ErrorCodesEnum.NOT_FOUND,
+      statusCode: 404,
+    });
     return;
   }
 
@@ -306,13 +325,12 @@ export const changePassword = async (req: Request, res: Response) => {
   );
 
   if (!isCurrentPasswordValid) {
-    sendError(
-      res,
-      "Current password is incorrect",
-      ErrorCodesEnum.UNAUTHORIZED,
-      null,
-      401
-    );
+    sendError({
+      response,
+      message: "Current password is incorrect",
+      code: ErrorCodesEnum.UNAUTHORIZED,
+      statusCode: 401,
+    });
     return;
   }
 
@@ -323,5 +341,9 @@ export const changePassword = async (req: Request, res: Response) => {
     data: { password: hashedNewPassword },
   });
 
-  sendSuccess(res, null, "Password changed successfully", 200);
+  sendSuccess({
+    response,
+    message: "Password changed successfully",
+    statusCode: 200,
+  });
 };
