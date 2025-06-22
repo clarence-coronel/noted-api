@@ -27,6 +27,9 @@ export const getProjectById = async (request: Request, response: Response) => {
       id,
       deletedAt: null,
     },
+    include: {
+      task: true,
+    },
   });
 
   if (!project) {

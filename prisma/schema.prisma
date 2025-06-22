@@ -41,7 +41,7 @@ model User {
   updatedAt   DateTime  @updatedAt
   password    String
   displayName String?
-  Project     Project[]
+  project     Project[]
   isActive    Boolean   @default(true)
 }
 
@@ -53,7 +53,7 @@ model Project {
   user      User      @relation(fields: [ownedBy], references: [id])
   ownedBy   String
   deletedAt DateTime?
-  Task      Task[]
+  task      Task[]
 }
 
 model Task {
@@ -62,7 +62,7 @@ model Task {
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
   deletedAt DateTime?
-  status    TaskStatus?
+  status    TaskStatus?   @default(TODO)
   type      TaskType      @default(ITEM)
   priority  TaskPriority? @default(LOW)
 
