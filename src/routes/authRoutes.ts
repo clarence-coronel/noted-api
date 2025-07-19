@@ -16,16 +16,18 @@ import { auth } from "../middleware/auth";
 
 const router = Router();
 
+// Authenticated routes
 router.get("/me", auth, getMe);
-router.post("/register", validateBody(createUserSchema), register);
-router.get("/access-token", getNewAccessToken);
-router.post("/login", validateBody(loginSchema), login);
-router.put("/access-token", getNewAccessToken);
 router.put(
   "/change-password",
   auth,
   validateBody(changePasswordSchema),
   changePassword
 );
+
+// Public routes
+router.post("/register", validateBody(createUserSchema), register);
+router.post("/login", validateBody(loginSchema), login);
+router.route("/access-token").get(getNewAccessToken).put(getNewAccessToken);
 
 export default router;

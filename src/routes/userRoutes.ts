@@ -14,6 +14,7 @@ router.put(
   validateBody(updateUserSchema),
   updateUser
 );
+
 router.delete("/:id", validateParams(idSchema), deleteUser);
 
 export default router;
