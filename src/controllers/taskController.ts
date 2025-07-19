@@ -5,19 +5,22 @@ import { z } from "zod";
 import { createTaskSchema, idSchema, updateTaskSchema } from "../schemas";
 import { ErrorCodesEnum } from "../enums";
 
-// export const getAllTasks = async (request: Request, response: Response) => {
-//   const ownedBy = request.user.userId;
+export const getAllTasks = async (request: Request, response: Response) => {
+  const ownedBy = request.user.userId;
 
-//   const projects = await prisma.project.findMany({
-//     where: {
-//       ownedBy,
-//       deletedAt: null, //do not include deleted projects
-//     },
-//   });
+  const tasks = await prisma.task.findMany({
+    where: {
+      deletedAt: null,
+      belongsTo: {
+        ownedBy,
+        deletedAt: null,
+      },
+    },
+  });
 
-//   sendSuccess({ response, data: projects });
-//   return;
-// };
+  sendSuccess({ response, data: tasks });
+  return;
+};
 
 export const getTaskById = async (request: Request, response: Response) => {
   const { id } = request.params as z.infer<typeof idSchema>;

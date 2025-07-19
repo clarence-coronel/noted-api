@@ -5,6 +5,7 @@ import { auth } from "../middleware/auth";
 import {
   createTask,
   deleteTask,
+  getAllTasks,
   getTaskById,
   updateTask,
 } from "../controllers";
@@ -13,6 +14,7 @@ const router = Router();
 
 router.use(auth);
 
+router.get("/", getAllTasks);
 router.get("/:id", validateParams(idSchema), getTaskById);
 router.post("/", validateBody(createTaskSchema), createTask);
 router.put(
