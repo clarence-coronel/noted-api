@@ -1,11 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { sendError } from "../utils/response";
 import { ErrorCodesEnum } from "../enums/errorCodesEnum";
-import {
-  verifyAccessToken,
-  verifyRefreshToken,
-  signAccessToken,
-} from "../utils";
+import { verifyAccessToken } from "../utils";
 
 export const auth = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers["authorization"];
@@ -19,13 +15,14 @@ export const auth = (req: Request, res: Response, next: NextFunction) => {
     if (parts.length === 2 && parts[0].toLowerCase() === "bearer" && parts[1]) {
       accessToken = parts[1];
     } else {
-      sendError(
-        res,
-        "Invalid authorization header format. Expected 'Bearer <token>'.",
-        ErrorCodesEnum.UNAUTHORIZED,
-        null,
-        401
-      );
+      sendError({
+        response: res,
+        message:
+          "Invalid authorization header format. Expected 'Bearer <token>'.",
+        code: ErrorCodesEnum.UNAUTHORIZED,
+        details: null,
+        statusCode: 401,
+      });
       return;
     }
   }
@@ -39,26 +36,11 @@ export const auth = (req: Request, res: Response, next: NextFunction) => {
     return;
   }
 
-  // If access token invalid or expired, try refreshing using refresh token
-  const refreshToken = req.cookies?.refreshToken;
-  const decodedRefresh = refreshToken && verifyRefreshToken(refreshToken);
-
-  if (decodedRefresh && typeof decodedRefresh !== "string") {
-    const { exp, iat, ...cleanPayload } = decodedRefresh;
-    const newAccessToken = signAccessToken(cleanPayload);
-
-    // Send new access token via header (you can also set it in cookie if preferred)
-    res.setHeader("x-access-token", newAccessToken);
-
-    (req as any).user = decodedRefresh;
-    return next();
-  }
-
-  sendError(
-    res,
-    "Session expired or invalid. Please log in again.",
-    ErrorCodesEnum.UNAUTHORIZED,
-    null,
-    401
-  );
+  sendError({
+    response: res,
+    message: "Session expired or invalid. Please log in again.",
+    code: ErrorCodesEnum.UNAUTHORIZED,
+    details: null,
+    statusCode: 401,
+  });
 };

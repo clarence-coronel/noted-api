@@ -8,13 +8,13 @@ export const validateParams = (schema: ZodSchema<any>) => {
     const result = schema.safeParse(req.params);
 
     if (!result.success) {
-      sendError(
-        res,
-        "Invalid URL parameters",
-        ErrorCodesEnum.VALIDATION_ERROR,
-        result.error.errors,
-        400
-      );
+      sendError({
+        response: res,
+        message: "Invalid URL parameters",
+        code: ErrorCodesEnum.VALIDATION_ERROR,
+        details: result.error.errors,
+        statusCode: 400,
+      });
       return;
     }
 

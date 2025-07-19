@@ -6,6 +6,28 @@ const displayNameSchema = z
   .max(64, "Display name cannot exceed 64 characters")
   .optional();
 
+export const passwordSchema = z
+  .string()
+  .min(8, "Password must be at least 8 characters")
+  .max(64, "Password cannot exceed 64 characters")
+  .refine((val) => /[a-z]/.test(val), {
+    message: "Password must contain at least one lowercase letter",
+  })
+  .refine((val) => /[A-Z]/.test(val), {
+    message: "Password must contain at least one uppercase letter",
+  })
+  .refine((val) => /\d/.test(val), {
+    message: "Password must contain at least one number",
+  })
+  .refine((val) => /[@$!%*?&()[\]{}^~#_+=|<>:;"',./\\-]/.test(val), {
+    message: "Password must contain at least one special character",
+  });
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string(),
+  newPassword: passwordSchema,
+});
+
 export const createUserSchema = z.object({
   username: z
     .string()
@@ -18,22 +40,7 @@ export const createUserSchema = z.object({
       message: "Username must not contain spaces",
     }),
 
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .max(64, "Password cannot exceed 64 characters")
-    .refine((val) => /[a-z]/.test(val), {
-      message: "Password must contain at least one lowercase letter",
-    })
-    .refine((val) => /[A-Z]/.test(val), {
-      message: "Password must contain at least one uppercase letter",
-    })
-    .refine((val) => /\d/.test(val), {
-      message: "Password must contain at least one number",
-    })
-    .refine((val) => /[@$!%*?&()[\]{}^~#_+=|<>:;"',./\\-]/.test(val), {
-      message: "Password must contain at least one special character",
-    }),
+  password: passwordSchema,
 
   displayName: displayNameSchema,
 });

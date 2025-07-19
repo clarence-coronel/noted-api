@@ -13,7 +13,6 @@ const router = Router();
 
 router.use(auth);
 
-// router.get("/", getAllProjects);
 router.get("/:id", validateParams(idSchema), getTaskById);
 router.post("/", validateBody(createTaskSchema), createTask);
 router.put(

@@ -15,13 +15,19 @@ import {
   ENVIRONMENT,
   REFRESH_TOKEN_EXPIRES,
 } from "../config";
-import { loginSchema } from "../schemas";
+import {
+  changePasswordSchema,
+  createUserSchema,
+  loginSchema,
+} from "../schemas";
 import { z } from "zod";
 
 const { user } = prisma;
 
 export const register = async (request: Request, response: Response) => {
-  const { username, password, displayName } = request.body;
+  const { username, password, displayName } = request.body as z.infer<
+    typeof createUserSchema
+  >;
 
   const existingUser = await user.findUnique({ where: { username } });
 
@@ -170,7 +176,10 @@ export const logout = async (request: Request, response: Response) => {
   });
 };
 
-export const refreshToken = async (request: Request, response: Response) => {
+export const getNewAccessToken = async (
+  request: Request,
+  response: Response
+) => {
   const { refreshToken } = request.cookies;
 
   if (!refreshToken) {
@@ -198,7 +207,7 @@ export const refreshToken = async (request: Request, response: Response) => {
   }
 
   // Extract user info from token
-  const { userId, username } = decoded as {
+  const { userId } = decoded as {
     userId: string;
     username: string;
   };
@@ -230,28 +239,19 @@ export const refreshToken = async (request: Request, response: Response) => {
   };
 
   const newAccessToken = signAccessToken(payload);
-  const newRefreshToken = signRefreshToken(payload);
-
-  // Set new refresh token as httpOnly cookie
-  response.cookie("refreshToken", newRefreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
-  });
 
   // Return new access token
   sendSuccess({
     response,
     data: {
-      accessToken: newAccessToken,
       user: {
         id: existingUser.id,
         username: existingUser.username,
         displayName: existingUser.displayName,
       },
+      accessToken: newAccessToken,
     },
-    message: "Token refreshed successfully",
+    message: "Access token refreshed successfully",
     statusCode: 200,
   });
 };
@@ -289,8 +289,13 @@ export const getMe = async (request: Request, response: Response) => {
 };
 
 export const changePassword = async (request: Request, response: Response) => {
-  const { currentPassword, newPassword } = request.body;
+  const { currentPassword, newPassword } = request.body as z.infer<
+    typeof changePasswordSchema
+  >;
+
   const userId = (request as any).user?.userId;
+
+  console.log("THIS", userId);
 
   if (!userId) {
     sendError({

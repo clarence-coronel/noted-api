@@ -8,13 +8,13 @@ export const validateBody =
   (req: Request, res: Response, next: NextFunction): void => {
     const result = schema.safeParse(req.body);
     if (!result.success) {
-      sendError(
-        res,
-        "Validation failed",
-        ErrorCodesEnum.VALIDATION_ERROR,
-        result.error.errors,
-        400
-      );
+      sendError({
+        response: res,
+        message: "Validation failed",
+        code: ErrorCodesEnum.VALIDATION_ERROR,
+        details: result.error.errors,
+        statusCode: 400,
+      });
       return;
     }
     req.body = result.data;
