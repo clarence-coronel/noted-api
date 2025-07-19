@@ -295,8 +295,6 @@ export const changePassword = async (request: Request, response: Response) => {
 
   const userId = (request as any).user?.userId;
 
-  console.log("THIS", userId);
-
   if (!userId) {
     sendError({
       response,
