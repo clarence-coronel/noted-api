@@ -5,8 +5,6 @@ import { ErrorCodesEnum } from "../enums";
 import { z } from "zod";
 import { idSchema, updateUserSchema } from "../schemas";
 
-const { user } = prisma;
-
 export const updateUser = async (request: Request, response: Response) => {
   const { id } = request.params as z.infer<typeof idSchema>;
   const { displayName } = request.body as z.infer<typeof updateUserSchema>;
@@ -22,7 +20,7 @@ export const updateUser = async (request: Request, response: Response) => {
     return;
   }
 
-  const updatedUser = await user.update({
+  const updatedUser = await prisma.user.update({
     where: {
       id,
     },
@@ -57,7 +55,7 @@ export const deleteUser = async (request: Request, response: Response) => {
     return;
   }
 
-  await user.update({
+  await prisma.user.update({
     where: {
       id,
     },

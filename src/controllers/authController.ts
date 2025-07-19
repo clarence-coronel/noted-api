@@ -22,14 +22,12 @@ import {
 } from "../schemas";
 import { z } from "zod";
 
-const { user } = prisma;
-
 export const register = async (request: Request, response: Response) => {
   const { username, password, displayName } = request.body as z.infer<
     typeof createUserSchema
   >;
 
-  const existingUser = await user.findUnique({ where: { username } });
+  const existingUser = await prisma.user.findUnique({ where: { username } });
 
   if (existingUser) {
     sendError({
@@ -43,7 +41,7 @@ export const register = async (request: Request, response: Response) => {
 
   const hashedPassword = await hashPassword(password);
 
-  const newUser = await user.create({
+  const newUser = await prisma.user.create({
     data: {
       username,
       password: hashedPassword,
@@ -213,7 +211,7 @@ export const getNewAccessToken = async (
   };
 
   // Verify user still exists in database
-  const existingUser = await user.findUnique({
+  const existingUser = await prisma.user.findUnique({
     where: { id: userId },
     select: {
       id: true,
@@ -259,7 +257,7 @@ export const getNewAccessToken = async (
 export const getMe = async (request: Request, response: Response) => {
   const userId = request.user.userId;
 
-  const currentUser = await user.findUnique({
+  const currentUser = await prisma.user.findUnique({
     where: { id: userId },
     select: {
       id: true,
@@ -339,7 +337,7 @@ export const changePassword = async (request: Request, response: Response) => {
 
   const hashedNewPassword = await hashPassword(newPassword);
 
-  await user.update({
+  await prisma.user.update({
     where: { id: userId },
     data: { password: hashedNewPassword },
   });
